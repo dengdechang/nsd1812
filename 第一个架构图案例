@@ -1,0 +1,73 @@
+一,2台nginx做转发代理,并且基于端口做动静分离
+
+(1)nginx代理转发配置
+upstream webserver {
+                server 192.168.0.25:80;
+                server 192.168.0.26:80;
+                server 192.168.0.31:8080; 
+                server 192.168.0.28:8080;
+                }
+        upstream webserver1 {
+                server 192.168.0.23:80;
+                server 192.168.0.24:80;
+                }
+
+listen       80;
+ location / {
+            root   html;
+            index  index.html index.htm;
+                proxy_pass http://webserver;
+        }
+
+listen       8000;
+ location / {
+            root   html;
+            index  index.html index.htm;
+             proxy_pass http://webserver1;
+        }
+(2)keepalived高可用配置,利用华为云申请的虚拟ip,和真实机器上(nginx代理)keepzalived上产生的虚拟ip绑定
+   virtual_ipaddress {
+        192.168.0.10
+    }
+   两边都要进行配置
+
+(3)动静态页面配置
+2台nginx和2台tomcat作为动态页面
+2台nginx做静态页面配置
+
+
+
+
+
+
+
+二,redis下载最新版本的软件老版本会和centos提供的软件不兼容
+Redis软件包(redis-5.0.4.tar.gz+redis-php-4.3.0.tgz的lnmpping平台扩展包)其他依赖关系都是centos7软件自带的
+redis + lnmp 
+yum -y install autoconf automake pcre-devel
+yum -y install php-devel
+Yum -y install php-fpm
+在redis-php的包中
+ phpize
+./configure  --with-php-config=/usr/bin/php-config
+
+ make&&make install
+
+
+Nfs+inotify+rsync
+
+静态页面 192.168.0.12为vip
+192.168.0.12:/nfsweb /usr/local/nginx/html nfs defaults,_netdev 0 0
+
+动态页面
+Nginx 
+192.168.0.12:/nfsweb2 /usr/local/nginx/html nfs defaults,_netdev 0 0
+Tomcat 挂载
+192.168.0.12:/nfsweb2 /usr/share/tomcat/webapps/ROOT nfs defaults,_netdev 0 0
+            192.168.0.25 web-d1 nginx
+			192.168.0.26 web-d2 nginx
+			192.168.0.31 web-d3 tomcat
+			192.168.0.28 web-d4 tomcat
+
+
+三,mycat服务器一定要加swap交换分区不然服务器启动不了
