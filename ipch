@@ -1,0 +1,21 @@
+#!/bin/bash
+echo "准备为eth0修改ip"
+read -p "请输入192.168.1.0网段的ip-->:" ip1
+ping -c 3 -i 0.2 -w 1 $ip1 &> /dev/null
+if [ $? -eq 0 ];then
+	echo "ip地址冲突请再次执行脚本更换另一个ip"
+	exit 59
+else
+echo "NAME=eth0
+DEVICE=eth0
+ONBOOT=yes
+NETBOOT=yes
+IPV6INIT=no
+BOOTPROTO=static
+TYPE=Ethernet
+IPADDR=$ip1
+NETMASK=255.255.255.0
+GATEWAY=192.168.1.254" > /etc/sysconfig/network-scripts/ifcfg-eth0
+fi
+systemctl restart network
+echo "网络重启成功"
